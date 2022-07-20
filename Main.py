@@ -1,3 +1,4 @@
+import pickle
 
 class hotkey:
     # need input key(s), modifiers, output key
@@ -16,7 +17,7 @@ class hotkey:
 
 
     def isValid(self):
-        if (len(self.inputKeys) > 0 and self.outputKey != ""):
+        if (len(self.inputKeys) > 0 and self.outputKey != "" and len(self.inputKeys) < 3):
             return True
         return False
 
@@ -35,6 +36,56 @@ class hotkey:
         return str
 
 
-test = hotkey(["A, B, C"], "OMGWTFBBQ", ["Ctrl"])
-print(test.output())
+# class modifier:
+#     modDict = {
+#         "Ctrl" : "^",
+#         "Win" : "#",
+#         "Alt" : "!",
+#         "Shift" : "+"
+#     }
+#
+#     def returnKey(self, key):
+#         return self.modDict[key]
 
+
+
+def printHeader(file):
+    file.write("""#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
+; #Warn  ; Enable warnings to assist with detecting common errors.
+SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
+SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
+
+""");
+
+
+def parseBasicOutput(hotkey):
+    str = ""
+    for input in hotkey.modifiers:
+        str += dict[input]
+    for input in hotkey.inputKeys:
+        str += input
+    #     account for multiple?
+    str += ":: Send, "
+    str += hotkey.outputKey;
+    return str
+
+dict = {
+        "Ctrl" : "^",
+        "Win" : "#",
+        "Alt" : "!",
+        "Shift" : "+"
+    }
+
+test = hotkey(["A"], "OMGWTFBBQ", ["Ctrl"])
+print(test.output())
+with open("test.ahk", "w") as fp:
+#     stuff
+    printHeader(fp)
+    fp.write(parseBasicOutput(test))
+# with open("testpickle", "wb") as fp:
+#     js = pickle.dumps(test)
+#     fp.write(js)
+with open("testpickle", "rb") as fp:
+    obj = fp.read()
+    obj = pickle.loads(obj)
+    print(obj.output())
