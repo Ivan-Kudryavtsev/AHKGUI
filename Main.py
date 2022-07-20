@@ -37,9 +37,12 @@ class hotkey:
 
 class hotkeyList():
     hotkeys = []
+    window = ""
 
-    def __init__(self, hotkeys):
+
+    def __init__(self, hotkeys, window):
         self.hotkeys = hotkeys
+        self.window = window
 
     def addHotkey(self, hotkey):
         self.hotkeys.append(hotkey)
@@ -47,6 +50,13 @@ class hotkeyList():
     def removeHotkey(self, hotkey):
         self.hotkeys.remove(hotkey)
 
+    def parse(self):
+        str = ""
+        if self.window != "":
+            str += "#IfWinActive ahk_class " + self.window + "\n"
+        for hotkey in self.hotkeys:
+            str += parseBasicOutput(hotkey)
+        return str
 
 
 # class modifier:
@@ -80,6 +90,7 @@ def parseBasicOutput(hotkey):
     #     account for multiple?
     str += ":: Send, "
     str += hotkey.outputKey;
+    str += "\n\n"
     return str
 
 dict = {
@@ -90,7 +101,7 @@ dict = {
     }
 
 
-def uppickleHotkeyList(filename):
+def unpickleHotkeyList(filename):
     with open(filename, "rb") as fp:
         obj = fp.read()
         obj = pickle.loads(obj)
@@ -102,10 +113,21 @@ def pickleHotkeyList(filename, hotkeys):
         js = pickle.dumps(hotkey)
         fp.write(js)
 
+def writeToFile(hotkeyList, filename):
+    with open(filename, "w") as fp:
+        printHeader(fp)
+        fp.write(hotkeyList.parse())
 
-test = hotkey(["A"], "OMGWTFBBQ", ["Ctrl"])
-print(test.output())
-with open("test.ahk", "w") as fp:
-#     stuff
-    printHeader(fp)
-    fp.write(parseBasicOutput(test))
+
+
+def main():
+    testlist = hotkeyList([], "Notepad")
+    test = hotkey(["A"], "OMGWTFBBQ", ["Ctrl"])
+    test2 = hotkey(["B"], "HelpMePlease", ["Ctrl", "Shift"])
+    testlist.addHotkey(test)
+    testlist.addHotkey(test2)
+    writeToFile(testlist, "test.ahk")
+
+
+
+main()
