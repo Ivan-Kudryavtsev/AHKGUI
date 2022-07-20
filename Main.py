@@ -35,6 +35,19 @@ class hotkey:
         str += self.outputKey
         return str
 
+class hotkeyList():
+    hotkeys = []
+
+    def __init__(self, hotkeys):
+        self.hotkeys = hotkeys
+
+    def addHotkey(self, hotkey):
+        self.hotkeys.append(hotkey)
+
+    def removeHotkey(self, hotkey):
+        self.hotkeys.remove(hotkey)
+
+
 
 # class modifier:
 #     modDict = {
@@ -76,16 +89,23 @@ dict = {
         "Shift" : "+"
     }
 
+
+def uppickleHotkeyList(filename):
+    with open(filename, "rb") as fp:
+        obj = fp.read()
+        obj = pickle.loads(obj)
+        return obj
+
+
+def pickleHotkeyList(filename, hotkeys):
+    with open(filename, "wb") as fp:
+        js = pickle.dumps(hotkey)
+        fp.write(js)
+
+
 test = hotkey(["A"], "OMGWTFBBQ", ["Ctrl"])
 print(test.output())
 with open("test.ahk", "w") as fp:
 #     stuff
     printHeader(fp)
     fp.write(parseBasicOutput(test))
-# with open("testpickle", "wb") as fp:
-#     js = pickle.dumps(test)
-#     fp.write(js)
-with open("testpickle", "rb") as fp:
-    obj = fp.read()
-    obj = pickle.loads(obj)
-    print(obj.output())
