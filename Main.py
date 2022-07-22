@@ -127,21 +127,36 @@ def writeToFile(hotkeyList, filename):
         printHeader(fp)
         fp.write(hotkeyList.parse())
 
-
-
-
 class hotkeyWidget(QWidget):
     hotkey = ""
 
     def __init__(self, hotkey):
         QWidget.__init__(self)
         self.hotkey = hotkey
-        label = QLabel();
-        label.setText(hotkey.output())
-        label.adjustSize()
+
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
-        self.layout.addWidget(label)
+        lInput = QLineEdit()
+        lOutput = QLineEdit()
+        chkCTRL = QCheckBox()
+        chkCTRL.setText("CTRL")
+        chkSHIFT = QCheckBox()
+        chkSHIFT.setText("SHIFT")
+        chkWIN = QCheckBox()
+        chkWIN.setText("WIN")
+        chkALT = QCheckBox()
+        chkALT.setText("ALT")
+        lInput.setText("INPUT")
+        lOutput.setText("OUTPUT")
+        self.layout.addWidget(lInput)
+        self.layout.addWidget(chkALT)
+        self.layout.addWidget(chkCTRL)
+        self.layout.addWidget(chkSHIFT)
+        self.layout.addWidget(chkWIN)
+
+
+        self.layout.addWidget(lOutput)
+
         self.adjustSize()
 #       define various ui elements based on hotkey values?
 
