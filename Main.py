@@ -1,4 +1,9 @@
 import pickle
+import sys
+
+import PyQt5
+from PyQt5.QtWidgets import *
+
 
 class hotkey:
     # need input key(s), modifiers, output key
@@ -20,6 +25,10 @@ class hotkey:
         if (len(self.inputKeys) > 0 and self.outputKey != "" and len(self.inputKeys) < 3):
             return True
         return False
+
+    def createWidget(self):
+        return hotkeyWidget(self)
+
 
 
     def output(self):
@@ -120,6 +129,34 @@ def writeToFile(hotkeyList, filename):
 
 
 
+
+class hotkeyWidget(QWidget):
+    hotkey = ""
+
+    def __init__(self, hotkey):
+        QWidget.__init__(self)
+        self.hotkey = hotkey
+        label = QLabel();
+        label.setText(hotkey.output())
+        label.adjustSize()
+#       define various ui elements based on hotkey values?
+
+class mainwindow(QMainWindow):
+    layout = ""
+
+    def __init__(self, parent=None):
+        super(mainwindow, self).__init__(parent)
+
+        container = QWidget()
+        self.setCentralWidget(container)
+        # using a widget as an argument in a Qt layout constructor results in
+        # automatically setting the layout for that widget
+        self.layout = QVBoxLayout(container);
+        self.setLayout(self.layout)
+
+    def addWidget(self, widget):
+        self.layout.addWidget(widget)
+
 def main():
     testlist = hotkeyList([], "Notepad")
     test = hotkey(["A"], "OMGWTFBBQ", ["Ctrl"])
@@ -127,6 +164,17 @@ def main():
     testlist.addHotkey(test)
     testlist.addHotkey(test2)
     writeToFile(testlist, "test.ahk")
+    app = QApplication(sys.argv)
+    win = mainwindow()
+    win.setGeometry(300,300,300,300)
+    win.setWindowTitle("AHKGUI")
+    n = hotkeyWidget(test)
+    win.addWidget(n)
+    # h = hotkeyWidget(test2)
+    # win.addWidget(h)
+    win.show()
+    print(test.output())
+    sys.exit(app.exec_())
 
 
 
