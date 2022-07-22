@@ -103,10 +103,10 @@ def parseBasicOutput(hotkey):
     return str
 
 dict = {
-        "Ctrl" : "^",
-        "Win" : "#",
-        "Alt" : "!",
-        "Shift" : "+"
+        "CTRL" : "^",
+        "WIN" : "#",
+        "ALT" : "!",
+        "SHIFT" : "+"
     }
 
 
@@ -129,6 +129,34 @@ def writeToFile(hotkeyList, filename):
 
 class hotkeyWidget(QWidget):
     hotkey = ""
+    modList = []
+
+    def getInput(self):
+        return self.lInput
+
+    def getOutput(self):
+        return self.lOutput
+
+    def getMods(self):
+        str = ""
+        if (self.chkWIN.isChecked()):
+            str += "WIN"
+        if (self.chkALT.isChecked()):
+            str += "ALT"
+        if (self.chkSHIFT.isChecked()):
+            str += "SHIFT"
+        if (self.chkCTRL.isChecked()):
+            str += "CTRL"
+        return str
+
+    def toggleModState(self, mod):
+        ch = dict.get(mod)
+        # print(ch)
+        if (ch in self.modList):
+            self.modList.remove(ch)
+        else:
+            self.modList.append(ch)
+        # print(self.modList)
 
     def __init__(self, hotkey):
         QWidget.__init__(self)
@@ -136,29 +164,34 @@ class hotkeyWidget(QWidget):
 
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
-        lInput = QLineEdit()
-        lOutput = QLineEdit()
-        chkCTRL = QCheckBox()
-        chkCTRL.setText("CTRL")
-        chkSHIFT = QCheckBox()
-        chkSHIFT.setText("SHIFT")
-        chkWIN = QCheckBox()
-        chkWIN.setText("WIN")
-        chkALT = QCheckBox()
-        chkALT.setText("ALT")
-        lInput.setText("INPUT")
-        lOutput.setText("OUTPUT")
-        self.layout.addWidget(lInput)
-        self.layout.addWidget(chkALT)
-        self.layout.addWidget(chkCTRL)
-        self.layout.addWidget(chkSHIFT)
-        self.layout.addWidget(chkWIN)
-
-
-        self.layout.addWidget(lOutput)
+        self.lInput = QLineEdit()
+        self.lOutput = QLineEdit()
+        self.chkCTRL = QCheckBox()
+        self.chkCTRL.setText("CTRL")
+        self.chkSHIFT = QCheckBox()
+        self.chkSHIFT.setText("SHIFT")
+        self.chkWIN = QCheckBox()
+        self.chkWIN.setText("WIN")
+        self.chkALT = QCheckBox()
+        self.chkALT.setText("ALT")
+        self.lInput.setText("INPUT")
+        self.lOutput.setText("OUTPUT")
+        self.layout.addWidget(self.lInput)
+        self.layout.addWidget(self.chkALT)
+        self.layout.addWidget(self.chkCTRL)
+        self.layout.addWidget(self.chkSHIFT)
+        self.layout.addWidget(self.chkWIN)
+        self.chkWIN.stateChanged.connect(lambda: self.toggleModState("WIN"))
+        self.chkSHIFT.stateChanged.connect(lambda: self.toggleModState("SHIFT"))
+        self.chkALT.stateChanged.connect(lambda: self.toggleModState("ALT"))
+        self.chkCTRL.stateChanged.connect(lambda: self.toggleModState("CTRL"))
+        self.layout.addWidget(self.lOutput)
 
         self.adjustSize()
 #       define various ui elements based on hotkey values?
+
+
+
 
 class mainwindow(QMainWindow):
     layout = ""
@@ -180,8 +213,8 @@ class mainwindow(QMainWindow):
 
 def main():
     testlist = hotkeyList([], "Notepad")
-    test = hotkey(["A"], "OMGWTFBBQ", ["Ctrl"])
-    test2 = hotkey(["B"], "HelpMePlease", ["Ctrl", "Shift"])
+    test = hotkey(["A"], "OMGWTFBBQ", ["CTRL"])
+    test2 = hotkey(["B"], "HelpMePlease", ["CTRL", "SHIFT"])
     testlist.addHotkey(test)
     testlist.addHotkey(test2)
     writeToFile(testlist, "test.ahk")
@@ -195,6 +228,7 @@ def main():
     win.addWidget(h)
     win.show()
     print(test.output())
+
     sys.exit(app.exec_())
 
 
