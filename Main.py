@@ -139,6 +139,10 @@ class hotkeyWidget(QWidget):
         label = QLabel();
         label.setText(hotkey.output())
         label.adjustSize()
+        self.layout = QHBoxLayout()
+        self.setLayout(self.layout)
+        self.layout.addWidget(label)
+        self.adjustSize()
 #       define various ui elements based on hotkey values?
 
 class mainwindow(QMainWindow):
@@ -155,7 +159,9 @@ class mainwindow(QMainWindow):
         self.setLayout(self.layout)
 
     def addWidget(self, widget):
+        # widget.setParent(self)
         self.layout.addWidget(widget)
+        # self.setLayout(self.layout)
 
 def main():
     testlist = hotkeyList([], "Notepad")
@@ -170,8 +176,8 @@ def main():
     win.setWindowTitle("AHKGUI")
     n = hotkeyWidget(test)
     win.addWidget(n)
-    # h = hotkeyWidget(test2)
-    # win.addWidget(h)
+    h = hotkeyWidget(test2)
+    win.addWidget(h)
     win.show()
     print(test.output())
     sys.exit(app.exec_())
