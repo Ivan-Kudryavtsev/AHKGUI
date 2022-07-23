@@ -1,10 +1,11 @@
 import pickle
 import sys
+import time
 
 import PyQt5
 from PyQt5.QtWidgets import *
-
-
+from PyQt5.QtGui import *
+from PyQt5.QtCore import QRegExp
 class hotkey:
     # need input key(s), modifiers, output key
     # eventually move on to output functions probably and then parse those but that's too complicated right now
@@ -19,6 +20,12 @@ class hotkey:
         print(output)
         self.modifiers = mods
         print(mods)
+
+    def setInput(self, string):
+        self.inputKeys = []
+        for i in range(0, len(string)):
+            self.inputKeys.append(string[i])
+        print(self.inputKeys)
 
 
     def isValid(self):
@@ -187,11 +194,14 @@ class hotkeyWidget(QWidget):
         self.chkCTRL.stateChanged.connect(lambda: self.toggleModState("CTRL"))
         self.layout.addWidget(self.lOutput)
 
+        # add validators for lineEdit objects!
+        twocharrgx = QRegExp(".{2}")
+        twochar = QRegExpValidator(twocharrgx, self.lInput)
+        self.lInput.setValidator(twochar)
+        # self.hotkey.text = self.lInput.text()
+        self.lInput.textChanged.connect(lambda: self.hotkey.setInput(self.lInput.text()))
         self.adjustSize()
 #       define various ui elements based on hotkey values?
-
-
-
 
 class mainwindow(QMainWindow):
     layout = ""
@@ -227,8 +237,6 @@ def main():
     h = hotkeyWidget(test2)
     win.addWidget(h)
     win.show()
-    print(test.output())
-
     sys.exit(app.exec_())
 
 
