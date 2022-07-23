@@ -97,6 +97,8 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 """);
 
 
+
+
 def parseBasicOutput(hotkey):
     str = ""
     for input in hotkey.modifiers:
@@ -133,6 +135,14 @@ def writeToFile(hotkeyList, filename):
     with open(filename, "w") as fp:
         printHeader(fp)
         fp.write(hotkeyList.parse())
+
+class capsLineEdit(QLineEdit):
+    def __init__(self):
+        QLineEdit.__init__(self)
+        self.textChanged.connect(self.upCase)
+
+    def upCase(self):
+        self.setText(self.text().upper())
 
 class hotkeyWidget(QWidget):
     hotkey = ""
@@ -171,8 +181,8 @@ class hotkeyWidget(QWidget):
 
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
-        self.lInput = QLineEdit()
-        self.lOutput = QLineEdit()
+        self.lInput = capsLineEdit()
+        self.lOutput = capsLineEdit()
         self.chkCTRL = QCheckBox()
         self.chkCTRL.setText("CTRL")
         self.chkSHIFT = QCheckBox()
@@ -181,8 +191,9 @@ class hotkeyWidget(QWidget):
         self.chkWIN.setText("WIN")
         self.chkALT = QCheckBox()
         self.chkALT.setText("ALT")
-        self.lInput.setText("INPUT")
-        self.lOutput.setText("OUTPUT")
+        # self.lInput.setText("INPUT")
+        self.lInput.setPlaceholderText("INPUT")
+        self.lOutput.setPlaceholderText("OUTPUT")
         self.layout.addWidget(self.lInput)
         self.layout.addWidget(self.chkALT)
         self.layout.addWidget(self.chkCTRL)
