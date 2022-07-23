@@ -11,7 +11,7 @@ class hotkey:
     # eventually move on to output functions probably and then parse those but that's too complicated right now
     inputKeys = []
     modifiers = []
-    outputKey = ""
+    outputKeys = []
 
     def __init__(self, inputs, output, mods):
         self.inputKeys = inputs
@@ -26,6 +26,12 @@ class hotkey:
         for i in range(0, len(string)):
             self.inputKeys.append(string[i])
         print(self.inputKeys)
+
+    def setOutput(self, string):
+        self.outputKeys = []
+        for i in range(0, len(string)):
+            self.outputKeys.append(string[i])
+        print(self.outputKeys)
 
 
     def isValid(self):
@@ -48,7 +54,9 @@ class hotkey:
             str += input
             str += ", "
         str += "Output: "
-        str += self.outputKey
+        for output in self.outputKeys:
+            str += output
+            str += ", "
         return str
 
 class hotkeyList():
@@ -171,8 +179,10 @@ class hotkeyWidget(QWidget):
         # print(ch)
         if (ch in self.modList):
             self.modList.remove(ch)
+            self.hotkey.modifiers.remove(ch)
         else:
             self.modList.append(ch)
+            self.hotkey.modifiers.append(ch)
         # print(self.modList)
 
     def __init__(self, hotkey):
@@ -211,6 +221,7 @@ class hotkeyWidget(QWidget):
         self.lInput.setValidator(twochar)
         # self.hotkey.text = self.lInput.text()
         self.lInput.textChanged.connect(lambda: self.hotkey.setInput(self.lInput.text()))
+        self.lOutput.textChanged.connect(lambda: self.hotkey.setOutput(self.lOutput.text()))
         self.adjustSize()
 #       define various ui elements based on hotkey values?
 
@@ -234,8 +245,8 @@ class mainwindow(QMainWindow):
 
 def main():
     testlist = hotkeyList([], "Notepad")
-    test = hotkey(["A"], "OMGWTFBBQ", ["CTRL"])
-    test2 = hotkey(["B"], "HelpMePlease", ["CTRL", "SHIFT"])
+    test = hotkey(["A"], "OMGWTFBBQ", [])
+    test2 = hotkey(["B"], "HelpMePlease", [])
     testlist.addHotkey(test)
     testlist.addHotkey(test2)
     writeToFile(testlist, "test.ahk")
@@ -247,8 +258,13 @@ def main():
     win.addWidget(n)
     h = hotkeyWidget(test2)
     win.addWidget(h)
+    b = QPushButton()
+    b.setText("SUBMIT")
+    b.pressed.connect(lambda: print(test.output()))
+    win.addWidget(b)
     win.show()
     sys.exit(app.exec_())
+
 
 
 
