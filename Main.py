@@ -5,7 +5,10 @@ import time
 import PyQt5
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from PyQt5.QtCore import QRegExp
+from PyQt5.QtCore import QRegExp, QDir
+
+
+
 class hotkey:
     # need input key(s), modifiers, output key
     # eventually move on to output functions probably and then parse those but that's too complicated right now
@@ -33,7 +36,6 @@ class hotkey:
             self.outputKeys.append(string[i])
         print(self.outputKeys)
 
-
     def isValid(self):
         if (len(self.inputKeys) > 0 and self.outputKey != "" and len(self.inputKeys) < 3):
             return True
@@ -41,8 +43,6 @@ class hotkey:
 
     def createWidget(self):
         return hotkeyWidget(self)
-
-
 
     def output(self):
         str = "Modifiers: "
@@ -63,7 +63,6 @@ class hotkeyList():
     hotkeys = []
     window = ""
 
-
     def __init__(self, hotkeys, window):
         self.hotkeys = hotkeys
         self.window = window
@@ -82,20 +81,6 @@ class hotkeyList():
             str += parseBasicOutput(hotkey)
         return str
 
-
-# class modifier:
-#     modDict = {
-#         "Ctrl" : "^",
-#         "Win" : "#",
-#         "Alt" : "!",
-#         "Shift" : "+"
-#     }
-#
-#     def returnKey(self, key):
-#         return self.modDict[key]
-
-
-
 def printHeader(file):
     file.write("""#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
 ; #Warn  ; Enable warnings to assist with detecting common errors.
@@ -104,13 +89,10 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 """);
 
-
-
-
 def parseBasicOutput(hotkey):
     str = ""
     for input in hotkey.modifiers:
-        str += dict[input]
+        str += input
     for input in hotkey.inputKeys:
         str += input
     #     account for multiple?
@@ -133,10 +115,9 @@ def unpickleHotkeyList(filename):
         obj = pickle.loads(obj)
         return obj
 
-
 def pickleHotkeyList(filename, hotkeys):
     with open(filename, "wb") as fp:
-        js = pickle.dumps(hotkey)
+        js = pickle.dumps(hotkeys)
         fp.write(js)
 
 def writeToFile(hotkeyList, filename):
@@ -192,7 +173,7 @@ class hotkeyWidget(QWidget):
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
         self.lInput = capsLineEdit()
-        self.lOutput = capsLineEdit()
+        self.lOutput = QLineEdit()
         self.chkCTRL = QCheckBox()
         self.chkCTRL.setText("CTRL")
         self.chkSHIFT = QCheckBox()
@@ -243,13 +224,32 @@ class mainwindow(QMainWindow):
         self.layout.addWidget(widget)
         # self.setLayout(self.layout)
 
+
+
+def selectFile(window):
+    fname, _ = QFileDialog.getOpenFileName(window, 'TEST', "*.pkl")
+    return fname
+
+def openHotkeyList(window):
+    return unpickleHotkeyList(selectFile(window))
+
+def loadHotkeyList(window):
+    # need to clear the window
+    for i in reversed(range(window.layout.count())):
+        window.layout.itemAt(i).widget().setParent(None)
+    for hotkey in openHotkeyList(window).hotkeys:
+        hkey = hotkeyWidget(hotkey)
+        window.addWidget(hkey)
+
+
+
 def main():
     testlist = hotkeyList([], "Notepad")
     test = hotkey(["A"], "OMGWTFBBQ", [])
     test2 = hotkey(["B"], "HelpMePlease", [])
     testlist.addHotkey(test)
     testlist.addHotkey(test2)
-    writeToFile(testlist, "test.ahk")
+    # writeToFile(testlist, "test.ahk")
     app = QApplication(sys.argv)
     win = mainwindow()
     win.setGeometry(300,300,300,300)
@@ -258,11 +258,17 @@ def main():
     win.addWidget(n)
     h = hotkeyWidget(test2)
     win.addWidget(h)
+    # fname, _ = QFileDialog.getOpenFileName(win, 'TEST', "*.pkl")
+
+
     b = QPushButton()
     b.setText("SUBMIT")
-    b.pressed.connect(lambda: print(test.output()))
+    b.pressed.connect(lambda: loadHotkeyList(win))
     win.addWidget(b)
     win.show()
+
+
+    pickleHotkeyList("th.pkl", testlist)
     sys.exit(app.exec_())
 
 
