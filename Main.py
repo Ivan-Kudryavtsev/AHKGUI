@@ -81,6 +81,25 @@ class hotkeyList():
             str += parseBasicOutput(hotkey)
         return str
 
+class hotkeyListList():
+    hotkeylists = []
+
+    def __init__(self, hotkeyLists):
+        self.hotkeyLists = hotkeyLists
+
+    def addHotkeyList(self, hotkeys):
+        self.hotkeyLists.append(hotkeys)
+
+    def removeHotkeyList(self, hotkeys):
+        self.hotkeyLists.remove(hotkeys)
+
+    def parse(self):
+        str = ""
+        for hotkey in self.hotkeyLists:
+            str += hotkey.parse()
+            str += "\n"
+        return str
+
 def printHeader(file):
     file.write("""#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
 ; #Warn  ; Enable warnings to assist with detecting common errors.
@@ -205,6 +224,7 @@ class hotkeyWidget(QWidget):
         self.lOutput.textChanged.connect(lambda: self.hotkey.setOutput(self.lOutput.text()))
         self.adjustSize()
 #       define various ui elements based on hotkey values?
+
 
 class mainwindow(QMainWindow):
     layout = ""
