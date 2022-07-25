@@ -5,7 +5,7 @@ import time
 import PyQt5
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from PyQt5.QtCore import QRegExp, QDir
+from PyQt5.QtCore import QRegExp, QDir, Qt
 
 
 
@@ -13,6 +13,7 @@ class hotkey:
     # need input key(s), modifiers, output key
     # eventually move on to output functions probably and then parse those but that's too complicated right now
     inputKeys = []
+    # what format are mods stored??
     modifiers = []
     outputKeys = []
 
@@ -152,9 +153,26 @@ class capsLineEdit(QLineEdit):
     def upCase(self):
         self.setText(self.text().upper())
 
+
+class hotkeyListWidget(QWidget):
+    def __init__(self, hotkeyList):
+
+        self.layout = QVBoxLayout();
+        self.setLayout(self.layout)
+
+        self.hotkeyList = hotkeyList;
+
+        for hotkey in hotkeyList:
+            self.layout.addWidget(hotkeyWidget(hotkey))
+
+    def getHotkeyList(self):
+        return self.hotkeyList
+
+
+
 class hotkeyWidget(QWidget):
     hotkey = ""
-    modList = []
+    # modList = []
 
     def getInput(self):
         return self.lInput
@@ -175,13 +193,14 @@ class hotkeyWidget(QWidget):
         return str
 
     def toggleModState(self, mod):
+        # needs to be reworked so that depends only on hotkey object!
         ch = dict.get(mod)
         # print(ch)
-        if (ch in self.modList):
-            self.modList.remove(ch)
+        if (ch in self.hotkey.modifiers):
+            # self.modList.remove(ch)
             self.hotkey.modifiers.remove(ch)
         else:
-            self.modList.append(ch)
+            # self.modList.append(ch)
             self.hotkey.modifiers.append(ch)
         # print(self.modList)
 
@@ -191,29 +210,47 @@ class hotkeyWidget(QWidget):
 
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
+
+
         self.lInput = capsLineEdit()
         self.lOutput = QLineEdit()
-        self.chkCTRL = QCheckBox()
-        self.chkCTRL.setText("CTRL")
-        self.chkSHIFT = QCheckBox()
-        self.chkSHIFT.setText("SHIFT")
-        self.chkWIN = QCheckBox()
-        self.chkWIN.setText("WIN")
-        self.chkALT = QCheckBox()
-        self.chkALT.setText("ALT")
         # self.lInput.setText("INPUT")
         self.lInput.setPlaceholderText("INPUT")
         self.lOutput.setPlaceholderText("OUTPUT")
+
+        self.chkCTRL = QCheckBox()
+        self.chkCTRL.setText("CTRL")
+        if "CTRL" in self.hotkey.modifiers:
+            self.chkCTRL.setChecked(True)
+        self.chkSHIFT = QCheckBox()
+        self.chkSHIFT.setText("SHIFT")
+        if "SHIFT" in self.hotkey.modifiers:
+            self.chkSHIFT.setChecked(True)
+        self.chkWIN = QCheckBox()
+        self.chkWIN.setText("WIN")
+        if "WIN" in self.hotkey.modifiers:
+            self.chkWIN.setChecked(True)
+        self.chkALT = QCheckBox()
+        self.chkALT.setText("ALT")
+        if "ALT" in self.hotkey.modifiers:
+            self.chkALT.setChecked(True)
+
+        self.chkWIN.stateChanged.connect(lambda: self.toggleModState("WIN"))
+        self.chkSHIFT.stateChanged.connect(lambda: self.toggleModState("SHIFT"))
+        self.chkALT.stateChanged.connect(lambda: self.toggleModState("ALT"))
+        self.chkCTRL.stateChanged.connect(lambda: self.toggleModState("CTRL"))
+
+
+
+
         self.layout.addWidget(self.lInput)
         self.layout.addWidget(self.chkALT)
         self.layout.addWidget(self.chkCTRL)
         self.layout.addWidget(self.chkSHIFT)
         self.layout.addWidget(self.chkWIN)
-        self.chkWIN.stateChanged.connect(lambda: self.toggleModState("WIN"))
-        self.chkSHIFT.stateChanged.connect(lambda: self.toggleModState("SHIFT"))
-        self.chkALT.stateChanged.connect(lambda: self.toggleModState("ALT"))
-        self.chkCTRL.stateChanged.connect(lambda: self.toggleModState("CTRL"))
         self.layout.addWidget(self.lOutput)
+
+
 
         # add validators for lineEdit objects!
         twocharrgx = QRegExp(".{2}")
@@ -246,6 +283,7 @@ class mainwindow(QMainWindow):
 
 
 
+
 def selectFile(window):
     fname, _ = QFileDialog.getOpenFileName(window, 'TEST', "*.pkl")
     return fname
@@ -260,6 +298,13 @@ def loadHotkeyList(window):
     for hotkey in openHotkeyList(window).hotkeys:
         hkey = hotkeyWidget(hotkey)
         window.addWidget(hkey)
+
+def saveHotkeyList(window):
+    name = selectFile(window)
+    # get open hotkeyList
+
+    with open(name, "wb") as fp:
+
 
 
 
@@ -279,8 +324,10 @@ def main():
     h = hotkeyWidget(test2)
     win.addWidget(h)
     # fname, _ = QFileDialog.getOpenFileName(win, 'TEST', "*.pkl")
-
-
+    c = QPushButton()
+    c.setText("SAVE")
+    c.pressed.connect(lambda: pickleHotkeyList("tht.pkl", testlist))
+    win.addWidget(c)
     b = QPushButton()
     b.setText("SUBMIT")
     b.pressed.connect(lambda: loadHotkeyList(win))
@@ -288,7 +335,7 @@ def main():
     win.show()
 
 
-    pickleHotkeyList("th.pkl", testlist)
+    # pickleHotkeyList("th.pkl", testlist)
     sys.exit(app.exec_())
 
 
