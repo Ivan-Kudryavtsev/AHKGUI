@@ -80,6 +80,18 @@ class hotkey:
             str += ", "
         return str
 
+    def parseBasicOutput(self):
+        str = ""
+        for input in self.modifiers:
+            str += dict.get(input)
+        for input in self.inputKeys:
+            str += input
+        #     account for multiple?
+        str += ":: Send, "
+        str += self.getOutput();
+        str += "\n\n"
+        return str
+
 
 class hotkeyList():
     hotkeys = []
@@ -104,7 +116,7 @@ class hotkeyList():
         if self.window != "":
             str += "#IfWinActive ahk_class " + self.window + "\n"
         for hotkey in self.hotkeys:
-            str += parseBasicOutput(hotkey)
+            str += hotkey.parseBasicOutput()
         return str
 
 
@@ -143,19 +155,6 @@ SendMode Input  ; Recommended for new scripts due to its superior speed and reli
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 """);
-
-
-def parseBasicOutput(hotkey):
-    str = ""
-    for input in hotkey.modifiers:
-        str += input
-    for input in hotkey.inputKeys:
-        str += input
-    #     account for multiple?
-    str += ":: Send, "
-    str += hotkey.getOutput();
-    str += "\n\n"
-    return str
 
 
 dict = {
