@@ -17,6 +17,7 @@ class hotkey:
     modifiers = []
     outputKeys = []
 
+
     def __init__(self, inputs, output, mods):
         self.inputKeys = inputs
         print(inputs)
@@ -25,11 +26,13 @@ class hotkey:
         self.modifiers = mods
         print(mods)
 
+
     def setInput(self, string):
         self.inputKeys = []
         for i in range(0, len(string)):
             self.inputKeys.append(string[i])
         print(self.inputKeys)
+
 
     def setOutput(self, string):
         self.outputKeys = []
@@ -37,10 +40,12 @@ class hotkey:
             self.outputKeys.append(string[i])
         print(self.outputKeys)
 
+
     def isValid(self):
         if (len(self.inputKeys) > 0 and self.outputKeys != [] and len(self.inputKeys) < 3):
             return True
         return False
+
 
     def getInput(self):
         str = ""
@@ -48,14 +53,17 @@ class hotkey:
             str += letter
         return str
 
+
     def getOutput(self):
         str = ""
         for letter in self.outputKeys:
             str += letter
         return str
 
+
     def createWidget(self):
         return hotkeyWidget(self)
+
 
     def output(self):
         str = "Modifiers: "
@@ -72,19 +80,24 @@ class hotkey:
             str += ", "
         return str
 
+
 class hotkeyList():
     hotkeys = []
     window = ""
+
 
     def __init__(self, hotkeys, window):
         self.hotkeys = hotkeys
         self.window = window
 
+
     def addHotkey(self, hotkey):
         self.hotkeys.append(hotkey)
 
+
     def removeHotkey(self, hotkey):
         self.hotkeys.remove(hotkey)
+
 
     def parse(self):
         str = ""
@@ -94,20 +107,26 @@ class hotkeyList():
             str += parseBasicOutput(hotkey)
         return str
 
+
 class hotkeyListList():
     hotkeylists = []
+
 
     def __init__(self, hotkeyLists):
         self.hotkeyLists = hotkeyLists
 
+
     def addHotkeyList(self, hotkeys):
         self.hotkeyLists.append(hotkeys)
+
 
     def removeHotkeyList(self, hotkeys):
         self.hotkeyLists.remove(hotkeys)
 
+
     def getLists(self):
         return self.hotkeyLists
+
 
     def parse(self):
         str = ""
@@ -116,6 +135,7 @@ class hotkeyListList():
             str += "\n"
         return str
 
+
 def printHeader(file):
     file.write("""#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
 ; #Warn  ; Enable warnings to assist with detecting common errors.
@@ -123,6 +143,7 @@ SendMode Input  ; Recommended for new scripts due to its superior speed and reli
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 """);
+
 
 def parseBasicOutput(hotkey):
     str = ""
@@ -135,6 +156,7 @@ def parseBasicOutput(hotkey):
     str += hotkey.getOutput();
     str += "\n\n"
     return str
+
 
 dict = {
         "CTRL" : "^",
@@ -150,23 +172,28 @@ def unpickleHotkeyList(filename):
         obj = pickle.loads(obj)
         return obj
 
+
 def pickleHotkeyList(filename, hotkeys):
     with open(filename, "wb") as fp:
         js = pickle.dumps(hotkeys)
         fp.write(js)
+
 
 def writeToFile(hotkeyList, filename):
     with open(filename, "w") as fp:
         printHeader(fp)
         fp.write(hotkeyList.parse())
 
+
 class capsLineEdit(QLineEdit):
     def __init__(self):
         QLineEdit.__init__(self)
         self.textChanged.connect(self.upCase)
 
+
     def upCase(self):
         self.setText(self.text().upper())
+
 
 class windowSelectorWidget(QWidget):
     # hang on this needs to handle quite a lot
@@ -175,6 +202,7 @@ class windowSelectorWidget(QWidget):
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
         self.layout.addStretch()
+
         label = QLabel()
         label.setText("TEST")
         self.layout.addWidget(label)
@@ -197,20 +225,23 @@ class hotkeyListWidget(QWidget):
         for hotkey in hotkeyList.hotkeys:
             self.layout.addWidget(hotkeyWidget(hotkey))
 
+
     def getHotkeyList(self):
         return self.hotkeyList
-
 
 
 class hotkeyWidget(QWidget):
     hotkey = ""
     # modList = []
 
+
     def getInput(self):
         return self.lInput
 
+
     def getOutput(self):
         return self.lOutput
+
 
     def getMods(self):
         str = ""
@@ -224,6 +255,7 @@ class hotkeyWidget(QWidget):
             str += "CTRL"
         return str
 
+
     def toggleModState(self, mod):
         # needs to be reworked so that depends only on hotkey object!
         ch = dict.get(mod)
@@ -235,6 +267,7 @@ class hotkeyWidget(QWidget):
             # self.modList.append(ch)
             self.hotkey.modifiers.append(ch)
         # print(self.modList)
+
 
     def __init__(self, hotkey):
         QWidget.__init__(self)
@@ -279,13 +312,11 @@ class hotkeyWidget(QWidget):
             self.chkALT.setChecked(True)
 
 
-
         # Bind changing checkbox state to changing state of hotkey object
         self.chkWIN.stateChanged.connect(lambda: self.toggleModState("WIN"))
         self.chkSHIFT.stateChanged.connect(lambda: self.toggleModState("SHIFT"))
         self.chkALT.stateChanged.connect(lambda: self.toggleModState("ALT"))
         self.chkCTRL.stateChanged.connect(lambda: self.toggleModState("CTRL"))
-
 
 
         # Add all widgets in order
@@ -308,18 +339,16 @@ class hotkeyWidget(QWidget):
         self.adjustSize()
 
 
+def printTest():
+    print("TEST")
+
 class mainwindow(QMainWindow):
     layout = ""
 
-    def __init__(self, parent=None):
-        super(mainwindow, self).__init__(parent)
-
-        container = QWidget()
-        self.setCentralWidget(container)
-        # using a widget as an argument in a Qt layout constructor results in
-        # automatically setting the layout for that widget
-        self.layout = QVBoxLayout(container);
-        self.setLayout(self.layout)
+    def createActions(self):
+        self.saveFile = QAction("&Save", self)
+        self.saveFile.setToolTip("Save file")
+        self.saveFile.triggered.connect(lambda: printTest())
 
     def addWidget(self, widget):
         # widget.setParent(self)
@@ -327,13 +356,45 @@ class mainwindow(QMainWindow):
         # self.setLayout(self.layout)
 
 
+    def __init__(self, parent=None):
+        super(mainwindow, self).__init__(parent)
+
+
+        container = QWidget()
+        self.setCentralWidget(container)
+        self.layout = QVBoxLayout(container);
+        self.setLayout(self.layout)
+
+
+        self.createActions()
+
+
+        mainMenu = QMenuBar()
+        self.menu = mainMenu
+        fileMenu = mainMenu.addMenu("File")
+        editMenu = mainMenu.addMenu("Edit")
+
+    #   create actions here and assign them
+
+        fileMenu.addAction(self.saveFile)
+
+
+
+
+
+        self.setMenuBar(mainMenu)
+
+
 
 
 def selectFile(window):
     fname, _ = QFileDialog.getOpenFileName(window, 'TEST', "*.pkl")
     return fname
+
+
 def openHotkeyList(window):
     return unpickleHotkeyList(selectFile(window))
+
 
 def loadHotkeyList(window):
     # need to clear the window
@@ -342,6 +403,7 @@ def loadHotkeyList(window):
     for hotkey in openHotkeyList(window).hotkeys:
         hkey = hotkeyWidget(hotkey)
         window.addWidget(hkey)
+
 
 def saveHotkeyList(window):
     name = selectFile(window)
@@ -363,6 +425,7 @@ def loadFile(fname, window):
             print("FOUND" + keylist.parse())
             widget = hotkeyListWidget(keylist)
             window.addWidget(widget)
+
 
 def createTestFile():
     test1 = hotkey(["A"], list("TEST1"), ["CTRL"])
