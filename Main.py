@@ -135,6 +135,7 @@ class hotkeyListList():
         return str
 
 
+
 def printHeader(file):
     file.write("""#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
 ; #Warn  ; Enable warnings to assist with detecting common errors.
@@ -352,6 +353,9 @@ class mainwindow(QMainWindow):
         self.openFile = QAction("&Open", self)
         self.openFile.triggered.connect(lambda: loadHotkeyList(self))
 
+        self.exportFile = QAction("&Export", self)
+        self.exportFile.triggered.connect(lambda: exportHotkeyList(self))
+
     def addWidget(self, widget):
         # widget.setParent(self)
         self.layout.addWidget(widget)
@@ -380,7 +384,7 @@ class mainwindow(QMainWindow):
 
         fileMenu.addAction(self.saveFile)
         fileMenu.addAction(self.openFile)
-
+        fileMenu.addAction(self.exportFile)
 
 
 
@@ -394,9 +398,14 @@ def selectExistingFile(window):
     return fname
 
 
-def selectNewFile(window):
+def selectNewPickleFile(window):
     fname, _ = QFileDialog.getSaveFileName(window, 'TEST', "*.pkl")
     return fname
+
+def selectNewAHKFile(window):
+    fname, _ = QFileDialog.getSaveFileName(window, 'TEST', "*.ahk")
+    return fname
+
 
 
 def openHotkeyList(window):
@@ -422,12 +431,19 @@ def loadHotkeyList(window):
 
 
 def saveHotkeyList(window):
-    name = selectNewFile(window)
+    name = selectNewPickleFile(window)
     # get open hotkeyList
     if name == "":
         return False
     pickleObject(name, currentLists)
     # how do i do that though...
+
+def exportHotkeyList(window):
+    name = selectNewAHKFile(window)
+    if name == "":
+        return False
+    with open(name, "w") as fp:
+        fp.write((currentLists.parse()))
 
 
 def loadFile(fname, window):
