@@ -400,14 +400,22 @@ def selectNewFile(window):
 
 
 def openHotkeyList(window):
-    return unpickleObject(selectExistingFile(window))
+    name = selectExistingFile(window)
+    if name == "":
+        return None
+    return unpickleObject(name)
 
 
 def loadHotkeyList(window):
     # need to clear the window
+    obj = openHotkeyList(window)
+    if obj is None:
+        return False
+
     for i in reversed(range(window.layout.count())):
         window.layout.itemAt(i).widget().setParent(None)
-    for hotkeyList in openHotkeyList(window).getLists():
+
+    for hotkeyList in obj.getLists():
         for hotkey in hotkeyList.hotkeys:
             hkey = hotkeyWidget(hotkey)
             window.addWidget(hkey)
@@ -416,6 +424,8 @@ def loadHotkeyList(window):
 def saveHotkeyList(window):
     name = selectNewFile(window)
     # get open hotkeyList
+    if name == "":
+        return False
     pickleObject(name, currentLists)
     # how do i do that though...
 
