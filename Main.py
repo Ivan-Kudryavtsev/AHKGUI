@@ -127,7 +127,6 @@ class hotkeyListList():
     def getLists(self):
         return self.hotkeyLists
 
-
     def parse(self):
         str = ""
         for hotkey in self.hotkeyLists:
@@ -166,16 +165,16 @@ dict = {
     }
 
 
-def unpickleHotkeyList(filename):
+def unpickleObject(filename):
     with open(filename, "rb") as fp:
         obj = fp.read()
         obj = pickle.loads(obj)
         return obj
 
 
-def pickleHotkeyList(filename, hotkeys):
+def pickleObject(filename, object):
     with open(filename, "wb") as fp:
-        js = pickle.dumps(hotkeys)
+        js = pickle.dumps(object)
         fp.write(js)
 
 
@@ -348,7 +347,10 @@ class mainwindow(QMainWindow):
     def createActions(self):
         self.saveFile = QAction("&Save", self)
         self.saveFile.setToolTip("Save file")
-        self.saveFile.triggered.connect(lambda: printTest())
+        self.saveFile.triggered.connect(lambda: saveHotkeyList(self))
+
+        self.openFile = QAction("&Open", self)
+        self.openFile.triggered.connect(lambda: loadHotkeyList(self))
 
     def addWidget(self, widget):
         # widget.setParent(self)
@@ -377,7 +379,7 @@ class mainwindow(QMainWindow):
     #   create actions here and assign them
 
         fileMenu.addAction(self.saveFile)
-
+        fileMenu.addAction(self.openFile)
 
 
 
@@ -387,29 +389,35 @@ class mainwindow(QMainWindow):
 
 
 
-def selectFile(window):
+def selectExistingFile(window):
     fname, _ = QFileDialog.getOpenFileName(window, 'TEST', "*.pkl")
     return fname
 
 
+def selectNewFile(window):
+    fname, _ = QFileDialog.getSaveFileName(window, 'TEST', "*.pkl")
+    return fname
+
+
 def openHotkeyList(window):
-    return unpickleHotkeyList(selectFile(window))
+    return unpickleObject(selectExistingFile(window))
 
 
 def loadHotkeyList(window):
     # need to clear the window
     for i in reversed(range(window.layout.count())):
         window.layout.itemAt(i).widget().setParent(None)
-    for hotkey in openHotkeyList(window).hotkeys:
-        hkey = hotkeyWidget(hotkey)
-        window.addWidget(hkey)
+    for hotkeyList in openHotkeyList(window).getLists():
+        for hotkey in hotkeyList.hotkeys:
+            hkey = hotkeyWidget(hotkey)
+            window.addWidget(hkey)
 
 
 def saveHotkeyList(window):
-    name = selectFile(window)
+    name = selectNewFile(window)
     # get open hotkeyList
-
-    # with open(name, "wb") as fp:
+    pickleObject(name, currentLists)
+    # how do i do that though...
 
 
 def loadFile(fname, window):
@@ -426,20 +434,23 @@ def loadFile(fname, window):
             widget = hotkeyListWidget(keylist)
             window.addWidget(widget)
 
+        return lists
+
 
 def createTestFile():
     test1 = hotkey(["A"], list("TEST1"), ["CTRL"])
     test2 = hotkey(["B"], list("TEST2"), ["SHIFT"])
     test3 = hotkey(["A"], list("TEST3"), ["CTRL"])
-    test4 = hotkey(["B"], list("TEST4"), ["SHIFT"])
+    test4 = hotkey(["B"], list("TEST/"), ["SHIFT"])
     test5 = hotkey(["A"], list("TEST5"), ["CTRL"])
     test6 = hotkey(["B"], list("TEST6"), ["SHIFT"])
     list1 = hotkeyList([test1,test2,test3], "Notepad")
     list2 = hotkeyList([test4,test5,test6], "Chrome")
     nlist1 = hotkeyListList([list1,list2])
-    data = pickle.dumps(nlist1)
-    with open("testfile.pkl", "wb") as fp:
-        fp.write(data)
+    # data = pickle.dumps(nlist1)
+    # with open("testfile.pkl", "wb") as fp:
+    #     fp.write(data)
+    pickleObject("testfile.pkl", nlist1)
 
 
 def main():
@@ -469,7 +480,9 @@ def main():
     # win.addWidget(b)
 
 
-    loadFile("testfile.pkl", win)
+    global currentLists
+    currentLists = loadFile("testfile.pkl", win)
+    # print(currentLists.parse())
     win.show()
 
 
