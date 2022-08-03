@@ -8,7 +8,6 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import QRegExp, QDir, Qt
 
 
-
 class hotkey:
     # need input key(s), modifiers, output key
     # eventually move on to output functions probably and then parse those but that's too complicated right now
@@ -16,7 +15,6 @@ class hotkey:
     # what format are mods stored??
     modifiers = []
     outputKeys = []
-
 
     def __init__(self, inputs, output, mods):
         self.inputKeys = inputs
@@ -26,13 +24,11 @@ class hotkey:
         self.modifiers = mods
         print(mods)
 
-
     def setInput(self, string):
         self.inputKeys = []
         for i in range(0, len(string)):
             self.inputKeys.append(string[i])
         print(self.inputKeys)
-
 
     def setOutput(self, string):
         self.outputKeys = []
@@ -40,12 +36,10 @@ class hotkey:
             self.outputKeys.append(string[i])
         print(self.outputKeys)
 
-
     def isValid(self):
         if (len(self.inputKeys) > 0 and self.outputKeys != [] and len(self.inputKeys) < 3):
             return True
         return False
-
 
     def getInput(self):
         str = ""
@@ -53,17 +47,14 @@ class hotkey:
             str += letter
         return str
 
-
     def getOutput(self):
         str = ""
         for letter in self.outputKeys:
             str += letter
         return str
 
-
     def createWidget(self):
         return hotkeyWidget(self)
-
 
     def output(self):
         str = "Modifiers: "
@@ -97,19 +88,15 @@ class hotkeyList():
     hotkeys = []
     window = ""
 
-
     def __init__(self, hotkeys, window):
         self.hotkeys = hotkeys
         self.window = window
 
-
     def addHotkey(self, hotkey):
         self.hotkeys.append(hotkey)
 
-
     def removeHotkey(self, hotkey):
         self.hotkeys.remove(hotkey)
-
 
     def parse(self):
         str = ""
@@ -120,24 +107,26 @@ class hotkeyList():
         return str
 
 
-class hotkeyListList():
+class hotkeyMap():
     hotkeylists = []
-
 
     def __init__(self, hotkeyLists):
         self.hotkeyLists = hotkeyLists
 
-
     def addHotkeyList(self, hotkeys):
         self.hotkeyLists.append(hotkeys)
-
 
     def removeHotkeyList(self, hotkeys):
         self.hotkeyLists.remove(hotkeys)
 
-
     def getLists(self):
         return self.hotkeyLists
+
+    def findByWindow(self, windowName):
+        for hotkeyList in self.hotkeyLists:
+            if hotkeyList.window == windowName:
+                return hotkeyList
+        return None
 
     def parse(self):
         str = ""
@@ -145,7 +134,6 @@ class hotkeyListList():
             str += hotkey.parse()
             str += "\n"
         return str
-
 
 
 def printHeader(file):
@@ -158,11 +146,11 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 
 dict = {
-        "CTRL" : "^",
-        "WIN" : "#",
-        "ALT" : "!",
-        "SHIFT" : "+"
-    }
+    "CTRL": "^",
+    "WIN": "#",
+    "ALT": "!",
+    "SHIFT": "+"
+}
 
 
 def unpickleObject(filename):
@@ -189,24 +177,64 @@ class capsLineEdit(QLineEdit):
         QLineEdit.__init__(self)
         self.textChanged.connect(self.upCase)
 
-
     def upCase(self):
         self.setText(self.text().upper())
 
 
 class windowSelectorWidget(QWidget):
     # hang on this needs to handle quite a lot
-    def __init__(self):
+    def __init__(self, hotkeyMap):
         QWidget.__init__(self)
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
         self.layout.addStretch()
 
-        label = QLabel()
-        label.setText("TEST")
-        self.layout.addWidget(label)
+        self.dropdown = QComboBox()
+        for hotkeyList in hotkeyMap.hotkeyLists:
+            self.dropdown.addItem(hotkeyList.window)
+
+        # dropdown.setPlaceholderText("HMM")
+
+        # label = QLabel()
+        # label.setText("TEST")
+        self.layout.addWidget(self.dropdown)
         self.layout.addStretch()
 
+
+    def getCurrent(self):
+        print("AAAAAAAAAAAAAAAAAAAAA")
+        print(self.dropdown.currentText())
+        return self.dropdown.currentText()
+    # def select(self,name):
+    #     # select correct dropdown
+    #     self.dropdown.
+
+
+class hotkeyMapWidget(QWidget):
+    def __init__(self, hotkeyMap):
+        QWidget.__init__(self)
+        self.hotkeyMap = hotkeyMap
+
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+
+        # windowName = QLabel()
+        # windowName.setText(self.hotkeyList.window)
+
+        windowNameWidget = windowSelectorWidget(hotkeyMap)
+        self.layout.addWidget(windowNameWidget)
+        windowName = windowNameWidget.getCurrent()
+        list = hotkeyMap.findByWindow(windowName)
+        if list is not None:
+            widget = hotkeyListWidget(list)
+            self.layout.addWidget(widget)
+        else:
+            label = QLabel()
+            label.setText("CANNOT FIND THAT LIST")
+            self.layout.addWidget(label)
+
+
+#       have the widget contain the
 
 class hotkeyListWidget(QWidget):
     def __init__(self, hotkeyList):
@@ -218,12 +246,14 @@ class hotkeyListWidget(QWidget):
 
         # windowName = QLabel()
         # windowName.setText(self.hotkeyList.window)
-        windowName = windowSelectorWidget()
-        self.layout.addWidget(windowName)
+
+        # take out selectorwidget
+
+        # windowName = windowSelectorWidget()
+        # self.layout.addWidget(windowName)
 
         for hotkey in hotkeyList.hotkeys:
             self.layout.addWidget(hotkeyWidget(hotkey))
-
 
     def getHotkeyList(self):
         return self.hotkeyList
@@ -231,16 +261,14 @@ class hotkeyListWidget(QWidget):
 
 class hotkeyWidget(QWidget):
     hotkey = ""
-    # modList = []
 
+    # modList = []
 
     def getInput(self):
         return self.lInput
 
-
     def getOutput(self):
         return self.lOutput
-
 
     def getMods(self):
         str = ""
@@ -254,7 +282,6 @@ class hotkeyWidget(QWidget):
             str += "CTRL"
         return str
 
-
     def toggleModState(self, mod):
         # needs to be reworked so that depends only on hotkey object!
         ch = dict.get(mod)
@@ -267,14 +294,12 @@ class hotkeyWidget(QWidget):
             self.hotkey.modifiers.append(ch)
         # print(self.modList)
 
-
     def __init__(self, hotkey):
         QWidget.__init__(self)
         self.hotkey = hotkey
 
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
-
 
         self.lInput = capsLineEdit()
         self.lOutput = QLineEdit()
@@ -310,13 +335,11 @@ class hotkeyWidget(QWidget):
         if "ALT" in self.hotkey.modifiers:
             self.chkALT.setChecked(True)
 
-
         # Bind changing checkbox state to changing state of hotkey object
         self.chkWIN.stateChanged.connect(lambda: self.toggleModState("WIN"))
         self.chkSHIFT.stateChanged.connect(lambda: self.toggleModState("SHIFT"))
         self.chkALT.stateChanged.connect(lambda: self.toggleModState("ALT"))
         self.chkCTRL.stateChanged.connect(lambda: self.toggleModState("CTRL"))
-
 
         # Add all widgets in order
         self.layout.addWidget(self.lInput)
@@ -326,7 +349,6 @@ class hotkeyWidget(QWidget):
         self.layout.addWidget(self.chkWIN)
         self.layout.addWidget(self.lOutput)
         self.layout.addStretch()
-
 
         # add validators for lineEdit objects
         twocharrgx = QRegExp(".{2}")
@@ -340,6 +362,7 @@ class hotkeyWidget(QWidget):
 
 def printTest():
     print("TEST")
+
 
 class mainwindow(QMainWindow):
     layout = ""
@@ -360,36 +383,28 @@ class mainwindow(QMainWindow):
         self.layout.addWidget(widget)
         # self.setLayout(self.layout)
 
-
     def __init__(self, parent=None):
         super(mainwindow, self).__init__(parent)
-
 
         container = QWidget()
         self.setCentralWidget(container)
         self.layout = QVBoxLayout(container);
         self.setLayout(self.layout)
 
-
         self.createActions()
-
 
         mainMenu = QMenuBar()
         self.menu = mainMenu
         fileMenu = mainMenu.addMenu("File")
         editMenu = mainMenu.addMenu("Edit")
 
-    #   create actions here and assign them
+        #   create actions here and assign them
 
         fileMenu.addAction(self.saveFile)
         fileMenu.addAction(self.openFile)
         fileMenu.addAction(self.exportFile)
 
-
-
         self.setMenuBar(mainMenu)
-
-
 
 
 def selectExistingFile(window):
@@ -401,10 +416,10 @@ def selectNewPickleFile(window):
     fname, _ = QFileDialog.getSaveFileName(window, 'TEST', "*.pkl")
     return fname
 
+
 def selectNewAHKFile(window):
     fname, _ = QFileDialog.getSaveFileName(window, 'TEST', "*.ahk")
     return fname
-
 
 
 def openHotkeyList(window):
@@ -437,6 +452,7 @@ def saveHotkeyList(window):
     pickleObject(name, currentLists)
     # how do i do that though...
 
+
 def exportHotkeyList(window):
     name = selectNewAHKFile(window)
     if name == "":
@@ -447,17 +463,20 @@ def exportHotkeyList(window):
 
 def loadFile(fname, window):
     with open(fname, "rb") as fp:
-        print("Opened" + fname)
+        # print("Opened" + fname)
         lists = fp.read()
         lists = pickle.loads(lists)
         # print("Lists" + lists.parse())
 
         # loop not running for some reason
-        for keylist in lists.getLists():
-            print("AAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-            print("FOUND" + keylist.parse())
-            widget = hotkeyListWidget(keylist)
-            window.addWidget(widget)
+        widget = hotkeyMapWidget(lists)
+        window.addWidget(widget)
+
+        # for keylist in lists.getLists():
+        #     # print("AAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        #     # print("FOUND" + keylist.parse())
+        #     widget = hotkeyListWidget(keylist)
+        #     window.addWidget(widget)
 
         return lists
 
@@ -469,9 +488,9 @@ def createTestFile():
     test4 = hotkey(["B"], list("TEST/"), ["SHIFT"])
     test5 = hotkey(["A"], list("TEST5"), ["CTRL"])
     test6 = hotkey(["B"], list("TEST6"), ["SHIFT"])
-    list1 = hotkeyList([test1,test2,test3], "Notepad")
-    list2 = hotkeyList([test4,test5,test6], "Chrome")
-    nlist1 = hotkeyListList([list1,list2])
+    list1 = hotkeyList([test1, test2, test3], "Notepad")
+    list2 = hotkeyList([test4, test5, test6], "Chrome")
+    nlist1 = hotkeyMap([list1, list2])
     # data = pickle.dumps(nlist1)
     # with open("testfile.pkl", "wb") as fp:
     #     fp.write(data)
@@ -481,15 +500,15 @@ def createTestFile():
 def main():
     createTestFile()
 
-    testlist = hotkeyList([], "Notepad")
-    test = hotkey(["A"], "OMGWTFBBQ", [])
-    test2 = hotkey(["B"], "HelpMePlease", [])
-    testlist.addHotkey(test)
-    testlist.addHotkey(test2)
+    # testlist = hotkeyList([], "Notepad")
+    # test = hotkey(["A"], "OMGWTFBBQ", [])
+    # test2 = hotkey(["B"], "HelpMePlease", [])
+    # testlist.addHotkey(test)
+    # testlist.addHotkey(test2)
     # writeToFile(testlist, "test.ahk")
     app = QApplication(sys.argv)
     win = mainwindow()
-    win.setGeometry(300,300,300,300)
+    win.setGeometry(300, 300, 300, 300)
     win.setWindowTitle("AHKGUI")
     # k = hotkeyListWidget(testlist)
     # win.addWidget(k)
@@ -504,17 +523,13 @@ def main():
 
     # win.addWidget(b)
 
-
     global currentLists
     currentLists = loadFile("testfile.pkl", win)
     # print(currentLists.parse())
     win.show()
 
-
     # pickleHotkeyList("th.pkl", testlist)
     sys.exit(app.exec_())
-
-
 
 
 main()
