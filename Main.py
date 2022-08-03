@@ -192,7 +192,7 @@ class windowSelectorWidget(QWidget):
         self.dropdown = QComboBox()
         for hotkeyList in hotkeyMap.hotkeyLists:
             self.dropdown.addItem(hotkeyList.window)
-
+        self.dropdown.activated.connect(lambda: self.parent().changeList(self.dropdown.currentText()));
         # dropdown.setPlaceholderText("HMM")
 
         # label = QLabel()
@@ -225,14 +225,22 @@ class hotkeyMapWidget(QWidget):
         self.layout.addWidget(windowNameWidget)
         windowName = windowNameWidget.getCurrent()
         list = hotkeyMap.findByWindow(windowName)
+
+
         if list is not None:
             widget = hotkeyListWidget(list)
             self.layout.addWidget(widget)
+            self.currentList = widget
         else:
             label = QLabel()
             label.setText("CANNOT FIND THAT LIST")
             self.layout.addWidget(label)
 
+
+    def changeList(self, listName):
+        self.layout.removeWidget(self.currentList)
+        self.currentList = hotkeyListWidget(self.hotkeyMap.findByWindow(listName))
+        self.layout.addWidget(self.currentList)
 
 #       have the widget contain the
 
