@@ -237,12 +237,16 @@ class hotkeyMapWidget(QWidget):
             self.layout.addWidget(label)
 
 
+
+
+
     def changeList(self, listName):
         self.layout.removeWidget(self.currentList)
         self.currentList = hotkeyListWidget(self.hotkeyMap.findByWindow(listName))
         self.layout.addWidget(self.currentList)
 
 #       have the widget contain the
+
 
 class hotkeyListWidget(QWidget):
     def __init__(self, hotkeyList):
@@ -263,9 +267,27 @@ class hotkeyListWidget(QWidget):
         for hotkey in hotkeyList.hotkeys:
             self.layout.addWidget(hotkeyWidget(hotkey))
 
+        self.addButton()
+
+
     def getHotkeyList(self):
         return self.hotkeyList
 
+
+    def addHotkey(self):
+        hkey = hotkey([],[],[])
+        self.layout.removeWidget(self.pushButton)
+        self.layout.addWidget(hotkeyWidget(hkey))
+        self.hotkeyList.addHotkey(hkey)
+        self.addButton()
+
+    def addButton(self):
+        addButton = QPushButton()
+        addButton.setText("New hotkey")
+        addButton.clicked.connect(lambda: self.addHotkey())
+        self.pushButton = addButton
+
+        self.layout.addWidget(addButton)
 
 class hotkeyWidget(QWidget):
     hotkey = ""
