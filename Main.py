@@ -259,7 +259,7 @@ class hotkeyListWidget(QWidget):
             self.layout.addWidget(hotkeyWidget(hotkey))
 
         self.addButton()
-        # self.layout.addStretch()
+        self.layout.addStretch()
 
     def getHotkeyList(self):
         return self.hotkeyList
