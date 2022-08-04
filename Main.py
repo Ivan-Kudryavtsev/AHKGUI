@@ -202,8 +202,8 @@ class windowSelectorWidget(QWidget):
 
 
     def getCurrent(self):
-        print("AAAAAAAAAAAAAAAAAAAAA")
-        print(self.dropdown.currentText())
+        # print("AAAAAAAAAAAAAAAAAAAAA")
+        # print(self.dropdown.currentText())
         return self.dropdown.currentText()
     # def select(self,name):
     #     # select correct dropdown
@@ -236,12 +236,11 @@ class hotkeyMapWidget(QWidget):
             label.setText("CANNOT FIND THAT LIST")
             self.layout.addWidget(label)
 
-
-
-
-
     def changeList(self, listName):
-        self.layout.removeWidget(self.currentList)
+        print(self.currentList.hotkeyList)
+        self.currentList.removeButton()
+        self.currentList.setParent(None)
+        # self.layout.removeWidget(self.currentList)
         self.currentList = hotkeyListWidget(self.hotkeyMap.findByWindow(listName))
         self.layout.addWidget(self.currentList)
 
@@ -256,34 +255,31 @@ class hotkeyListWidget(QWidget):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
-        # windowName = QLabel()
-        # windowName.setText(self.hotkeyList.window)
-
-        # take out selectorwidget
-
-        # windowName = windowSelectorWidget()
-        # self.layout.addWidget(windowName)
-
         for hotkey in hotkeyList.hotkeys:
             self.layout.addWidget(hotkeyWidget(hotkey))
 
         self.addButton()
-
+        # self.layout.addStretch()
 
     def getHotkeyList(self):
         return self.hotkeyList
 
+    def removeButton(self):
+        self.pushButton.setParent(None)
+        print("REMOVE BUTTON")
 
     def addHotkey(self):
         hkey = hotkey([],[],[])
-        self.layout.removeWidget(self.pushButton)
+        self.pushButton.setParent(None)
         self.layout.addWidget(hotkeyWidget(hkey))
         self.hotkeyList.addHotkey(hkey)
         self.addButton()
+        # self.removeButton()
 
     def addButton(self):
         addButton = QPushButton()
         addButton.setText("New hotkey")
+        print("NEW BUTTON CREATED")
         addButton.clicked.connect(lambda: self.addHotkey())
         self.pushButton = addButton
 
