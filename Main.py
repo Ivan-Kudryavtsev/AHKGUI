@@ -116,8 +116,18 @@ class hotkeyMap():
     def addHotkeyList(self, hotkeys):
         self.hotkeyLists.append(hotkeys)
 
+    def addDefaultHotkeyList(self):
+        n = hotkeyList([], "Default")
+        self.addHotkeyList(n)
+
     def removeHotkeyList(self, hotkeys):
         self.hotkeyLists.remove(hotkeys)
+
+    def getListNames(self):
+        string = []
+        for list in self.hotkeyLists:
+            string.append(list.window)
+        return string
 
     def getLists(self):
         return self.hotkeyLists
@@ -142,7 +152,7 @@ def printHeader(file):
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
-""");
+""")
 
 
 dict = {
@@ -188,17 +198,33 @@ class windowSelectorWidget(QWidget):
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
         self.layout.addStretch()
+        self.hotkeyMap = hotkeyMap
 
         self.dropdown = QComboBox()
         for hotkeyList in hotkeyMap.hotkeyLists:
             self.dropdown.addItem(hotkeyList.window)
-        self.dropdown.activated.connect(lambda: self.parent().changeList(self.dropdown.currentText()));
+        self.dropdown.activated.connect(lambda: self.parent().parseDropdown(self.dropdown.currentText()))
         # dropdown.setPlaceholderText("HMM")
-
+        # self.dropdown.addItem("Create new list")
+        self.dropdown.setEditable(True)
+        self.dropdown.duplicatesEnabled(False)
         # label = QLabel()
         # label.setText("TEST")
         self.layout.addWidget(self.dropdown)
+        self.newListButton = QPushButton()
+        self.newListButton.setText("New List")
+        self.newListButton.pressed.connect(lambda: self.hotkeyMap.addDefaultHotkeyList())
+        self.newListButton.pressed.connect(self.reload)
+        self.newListButton.pressed.connect(lambda: self.parent().parseDropdown("Default"))
+        self.layout.addWidget(self.newListButton)
         self.layout.addStretch()
+
+
+    def reload(self):
+        # currentList = self.dropdown.currentText()
+        self.dropdown.clear()
+        self.dropdown.addItems(self.hotkeyMap.getListNames())
+        self.dropdown.setCurrentIndex(self.dropdown.findText("Default"))
 
 
     def getCurrent(self):
@@ -236,13 +262,17 @@ class hotkeyMapWidget(QWidget):
             label.setText("CANNOT FIND THAT LIST")
             self.layout.addWidget(label)
 
-    def changeList(self, listName):
-        print(self.currentList.hotkeyList)
-        self.currentList.removeButton()
-        self.currentList.setParent(None)
-        # self.layout.removeWidget(self.currentList)
-        self.currentList = hotkeyListWidget(self.hotkeyMap.findByWindow(listName))
-        self.layout.addWidget(self.currentList)
+    def parseDropdown(self, listName):
+        if (listName == "Create new list"):
+            print("NEW LIST")
+
+        else:
+            print(self.currentList.hotkeyList)
+            self.currentList.removeButton()
+            self.currentList.setParent(None)
+            # self.layout.removeWidget(self.currentList)
+            self.currentList = hotkeyListWidget(self.hotkeyMap.findByWindow(listName))
+            self.layout.addWidget(self.currentList)
 
 #       have the widget contain the
 
@@ -266,7 +296,7 @@ class hotkeyListWidget(QWidget):
 
     def removeButton(self):
         self.pushButton.setParent(None)
-        print("REMOVE BUTTON")
+        # print("REMOVE BUTTON")
 
     def addHotkey(self):
         hkey = hotkey([],[],[])
@@ -279,7 +309,7 @@ class hotkeyListWidget(QWidget):
     def addButton(self):
         addButton = QPushButton()
         addButton.setText("New hotkey")
-        print("NEW BUTTON CREATED")
+        # print("NEW BUTTON CREATED")
         addButton.clicked.connect(lambda: self.addHotkey())
         self.pushButton = addButton
 
