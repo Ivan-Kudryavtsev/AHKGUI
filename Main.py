@@ -197,25 +197,34 @@ class windowSelectorWidget(QWidget):
         QWidget.__init__(self)
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
-        self.layout.addStretch()
         self.hotkeyMap = hotkeyMap
 
         self.dropdown = QComboBox()
         for hotkeyList in hotkeyMap.hotkeyLists:
             self.dropdown.addItem(hotkeyList.window)
         self.dropdown.activated.connect(lambda: self.parent().parseDropdown(self.dropdown.currentText()))
-        # dropdown.setPlaceholderText("HMM")
-        # self.dropdown.addItem("Create new list")
         self.dropdown.setEditable(True)
-        self.dropdown.duplicatesEnabled(False)
-        # label = QLabel()
-        # label.setText("TEST")
-        self.layout.addWidget(self.dropdown)
+        self.dropdown.setDuplicatesEnabled(False)
+
+
+
+        # Define delete list button
+        self.deleteListButton = QPushButton()
+        self.deleteListButton.setText("Delete List")
+        self.deleteListButton.pressed.connect(self.deleteCurrent)
+
+        # Define new list button
         self.newListButton = QPushButton()
         self.newListButton.setText("New List")
         self.newListButton.pressed.connect(lambda: self.hotkeyMap.addDefaultHotkeyList())
         self.newListButton.pressed.connect(self.reload)
         self.newListButton.pressed.connect(lambda: self.parent().parseDropdown("Default"))
+
+
+        # add layout elements
+        self.layout.addStretch()
+        self.layout.addWidget(self.deleteListButton)
+        self.layout.addWidget(self.dropdown)
         self.layout.addWidget(self.newListButton)
         self.layout.addStretch()
 
@@ -224,8 +233,38 @@ class windowSelectorWidget(QWidget):
         # currentList = self.dropdown.currentText()
         self.dropdown.clear()
         self.dropdown.addItems(self.hotkeyMap.getListNames())
-        self.dropdown.setCurrentIndex(self.dropdown.findText("Default"))
+        if self.dropdown.findText("Default") == -1:
+            self.dropdown.setCurrentIndex(0)
+        else:
+            self.dropdown.setCurrentIndex(self.dropdown.findText("Default"))
 
+
+    def deleteCurrent(self):
+
+        # self.layout.addWidget(q)
+        msg = QMessageBox()
+        msg.setWindowTitle("Confirm")
+        msg.setText("Are you sure? Click OK to continue.")
+        msg.setStandardButtons(QMessageBox.Cancel| QMessageBox.Ok)
+        msg.setDefaultButton(QMessageBox.Cancel)
+        msg.setIcon(QMessageBox.Question)
+
+
+        msg.buttonClicked.connect(self.popup_button_delete)
+
+        x = msg.exec_()
+
+    def print(self):
+        print("STUFF")
+
+    def popup_button_delete(self, i):
+        print("AAA")
+        print(i.text())
+        if (i.text() == "OK"):
+            current = self.dropdown.currentText()
+            self.hotkeyMap.removeHotkeyList(self.hotkeyMap.findByWindow(current))
+            self.dropdown.removeItem(self.dropdown.findText(current))
+            self.reload()
 
     def getCurrent(self):
         # print("AAAAAAAAAAAAAAAAAAAAA")
