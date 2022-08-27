@@ -193,16 +193,21 @@ class capsLineEdit(QLineEdit):
 
 class windowSelectorWidget(QWidget):
     # hang on this needs to handle quite a lot
-    def __init__(self, hotkeyMap):
+    def __init__(self, hotkeyMap, parent = None):
         QWidget.__init__(self)
+        self.setParent(parent)
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
         self.hotkeyMap = hotkeyMap
 
+
         self.dropdown = QComboBox()
         for hotkeyList in hotkeyMap.hotkeyLists:
             self.dropdown.addItem(hotkeyList.window)
+        # print(self.parent())
+        self.currentList = self.parent().getList(self.dropdown.currentText())
         self.dropdown.activated.connect(lambda: self.parent().parseDropdown(self.dropdown.currentText()))
+        self.dropdown.currentTextChanged.connect(self.rename)
         self.dropdown.setEditable(True)
         self.dropdown.setDuplicatesEnabled(False)
 
@@ -235,6 +240,7 @@ class windowSelectorWidget(QWidget):
         self.dropdown.addItems(self.hotkeyMap.getListNames())
         if self.dropdown.findText("Default") == -1:
             self.dropdown.setCurrentIndex(0)
+            self.currentList = self.parent().getList(self.dropdown.currentText())
         else:
             self.dropdown.setCurrentIndex(self.dropdown.findText("Default"))
 
@@ -266,6 +272,9 @@ class windowSelectorWidget(QWidget):
             self.dropdown.removeItem(self.dropdown.findText(current))
             self.reload()
 
+    def rename(self):
+        self.currentList.window = self.dropdown.currentText()
+
     def getCurrent(self):
         # print("AAAAAAAAAAAAAAAAAAAAA")
         # print(self.dropdown.currentText())
@@ -276,17 +285,20 @@ class windowSelectorWidget(QWidget):
 
 
 class hotkeyMapWidget(QWidget):
-    def __init__(self, hotkeyMap):
+    def __init__(self, hotkeyMap, parent = None):
+        #super(hotkeyMapWidget, self).__init__(parent)
         QWidget.__init__(self)
+        self.setParent(parent)
         self.hotkeyMap = hotkeyMap
-
+        print("OLE")
+        print(self.parent())
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
         # windowName = QLabel()
         # windowName.setText(self.hotkeyList.window)
-
-        windowNameWidget = windowSelectorWidget(hotkeyMap)
+        # print("LLLLL" + self.objectName());
+        windowNameWidget = windowSelectorWidget(hotkeyMap, self)
         self.layout.addWidget(windowNameWidget)
         windowName = windowNameWidget.getCurrent()
         list = hotkeyMap.findByWindow(windowName)
@@ -314,7 +326,8 @@ class hotkeyMapWidget(QWidget):
             self.layout.addWidget(self.currentList)
 
 #       have the widget contain the
-
+    def getList(self, listName):
+        return self.hotkeyMap.findByWindow(listName)
 
 class hotkeyListWidget(QWidget):
     def __init__(self, hotkeyList):
@@ -561,10 +574,10 @@ def loadFile(fname, window):
         # print("Opened" + fname)
         lists = fp.read()
         lists = pickle.loads(lists)
-        # print("Lists" + lists.parse())
+        print("Lists" + lists.parse())
 
         # loop not running for some reason
-        widget = hotkeyMapWidget(lists)
+        widget = hotkeyMapWidget(lists, window)
         window.addWidget(widget)
 
         # for keylist in lists.getLists():
@@ -624,7 +637,8 @@ def main():
     win.show()
 
     # pickleHotkeyList("th.pkl", testlist)
-    sys.exit(app.exec_())
-
+    app.exec_()
+    print("AA")
+    print('\n'.join(repr(w) for w in app.allWidgets()))
 
 main()
