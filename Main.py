@@ -211,8 +211,6 @@ class windowSelectorWidget(QWidget):
         self.dropdown.setEditable(True)
         self.dropdown.setDuplicatesEnabled(False)
 
-
-
         # Define delete list button
         self.deleteListButton = QPushButton()
         self.deleteListButton.setText("Delete List")
@@ -321,6 +319,7 @@ class hotkeyMapWidget(QWidget):
             print(self.currentList.hotkeyList)
             self.currentList.removeButton()
             self.currentList.setParent(None)
+            self.currentList.deleteLater()
             # self.layout.removeWidget(self.currentList)
             self.currentList = hotkeyListWidget(self.hotkeyMap.findByWindow(listName))
             self.layout.addWidget(self.currentList)
@@ -348,11 +347,13 @@ class hotkeyListWidget(QWidget):
 
     def removeButton(self):
         self.pushButton.setParent(None)
+        self.pushButton.deleteLater()
         # print("REMOVE BUTTON")
 
     def addHotkey(self):
         hkey = hotkey([],[],[])
         self.pushButton.setParent(None)
+        self.pushButton.deleteLater()
         self.layout.addWidget(hotkeyWidget(hkey))
         self.hotkeyList.addHotkey(hkey)
         self.addButton()
@@ -545,6 +546,7 @@ def loadHotkeyList(window):
 
     for i in reversed(range(window.layout.count())):
         window.layout.itemAt(i).widget().setParent(None)
+        window.layout.itemAt(i).widget().deleteLater()
 
     for hotkeyList in obj.getLists():
         for hotkey in hotkeyList.hotkeys:
