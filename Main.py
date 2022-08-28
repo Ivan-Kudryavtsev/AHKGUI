@@ -240,8 +240,11 @@ class windowSelectorWidget(QWidget):
         if (self.hotkeyMap.getListNames() == []):
             # create new stuff ig
             self.hotkeyMap.addDefaultHotkeyList()
+            self.dropdown.clear()
             self.dropdown.addItems(self.hotkeyMap.getListNames())
             self.currentList = self.parent().getList(self.dropdown.currentText())
+            self.parent().parseDropdown(self.dropdown.currentText())
+            # here need to reload the actual list tho!
         else:
             if self.dropdown.findText("Default") == -1:
                 self.dropdown.setCurrentIndex(0)
