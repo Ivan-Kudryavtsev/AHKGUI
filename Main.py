@@ -236,11 +236,17 @@ class windowSelectorWidget(QWidget):
         # currentList = self.dropdown.currentText()
         self.dropdown.clear()
         self.dropdown.addItems(self.hotkeyMap.getListNames())
-        if self.dropdown.findText("Default") == -1:
-            self.dropdown.setCurrentIndex(0)
+        print(self.hotkeyMap.getListNames())
+        if (self.hotkeyMap.getListNames() == []):
+            # create new stuff ig
+            self.hotkeyMap.addDefaultHotkeyList()
+            self.dropdown.addItems(self.hotkeyMap.getListNames())
             self.currentList = self.parent().getList(self.dropdown.currentText())
         else:
-            self.dropdown.setCurrentIndex(self.dropdown.findText("Default"))
+            if self.dropdown.findText("Default") == -1:
+                self.dropdown.setCurrentIndex(0)
+            else:
+                self.dropdown.setCurrentIndex(self.dropdown.findText("Default"))
 
 
     def deleteCurrent(self):
@@ -269,6 +275,7 @@ class windowSelectorWidget(QWidget):
             self.hotkeyMap.removeHotkeyList(self.hotkeyMap.findByWindow(current))
             self.dropdown.removeItem(self.dropdown.findText(current))
             self.reload()
+
 
     def rename(self):
         self.currentList.window = self.dropdown.currentText()
