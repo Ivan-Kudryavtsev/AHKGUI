@@ -223,7 +223,6 @@ class windowSelectorWidget(QWidget):
         self.newListButton.pressed.connect(self.reload)
         self.newListButton.pressed.connect(lambda: self.parent().parseDropdown("Default"))
 
-
         # add layout elements
         self.layout.addStretch()
         self.layout.addWidget(self.deleteListButton)
@@ -298,8 +297,6 @@ class hotkeyMapWidget(QWidget):
         QWidget.__init__(self)
         self.setParent(parent)
         self.hotkeyMap = hotkeyMap
-        print("OLE")
-        print(self.parent())
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
