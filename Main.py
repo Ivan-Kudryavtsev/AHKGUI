@@ -1,6 +1,7 @@
 import pickle
 import sys
 import time
+from builtins import dict
 
 import PyQt5
 from PyQt5.QtWidgets import *
@@ -95,6 +96,9 @@ class hotkeyList():
     def addHotkey(self, hotkey):
         self.hotkeys.append(hotkey)
 
+    def rename(self, newname):
+        self.window = newname
+
     def removeHotkey(self, hotkey):
         self.hotkeys.remove(hotkey)
 
@@ -108,39 +112,45 @@ class hotkeyList():
 
 
 class hotkeyMap():
-    hotkeylists = []
+    hotkeyLists = dict({'Default': hotkeyList([hotkey([], [], [])], "None")})
 
     def __init__(self, hotkeyLists):
-        self.hotkeyLists = hotkeyLists
+        self.hotkeyLists.clear()
+        for lst in hotkeyLists:
+            self.hotkeyLists[lst.window] = lst
 
-    def addHotkeyList(self, hotkeys):
-        self.hotkeyLists.append(hotkeys)
+    def addHotkeyList(self, lst):
+        self.hotkeyLists[lst.window] = lst
 
     def addDefaultHotkeyList(self):
         n = hotkeyList([], "Default")
         self.addHotkeyList(n)
 
-    def removeHotkeyList(self, hotkeys):
-        self.hotkeyLists.remove(hotkeys)
+    def removeHotkeyList(self, lst):
+        del self.hotkeyLists[lst.window]
+
+    def renameHotkeyList(self, lst, newname):
+        self.removeHotkeyList(lst)
+        self.hotkeyLists[newname] = lst
+        lst.rename(newname)
 
     def getListNames(self):
-        string = []
-        for list in self.hotkeyLists:
-            string.append(list.window)
-        return string
+        return self.hotkeyLists.keys()
 
     def getLists(self):
-        return self.hotkeyLists
+        return self.hotkeyLists.values()
 
     def findByWindow(self, windowName):
-        for hotkeyList in self.hotkeyLists:
-            if hotkeyList.window == windowName:
-                return hotkeyList
-        return None
+        print("FINDING" + windowName)
+        print(self.hotkeyLists.get(windowName))
+        return self.hotkeyLists.get(windowName)
 
     def parse(self):
         str = ""
-        for hotkey in self.hotkeyLists:
+        print(list(self.hotkeyLists.values()))
+        for hotkey in list(self.hotkeyLists.values()):
+            print("A")
+            print(hotkey)
             str += hotkey.parse()
             str += "\n"
         return str
@@ -202,7 +212,7 @@ class windowSelectorWidget(QWidget):
 
 
         self.dropdown = QComboBox()
-        for hotkeyList in hotkeyMap.hotkeyLists:
+        for hotkeyList in hotkeyMap.getLists():
             self.dropdown.addItem(hotkeyList.window)
         # print(self.parent())
         self.currentList = self.parent().getList(self.dropdown.currentText())
@@ -280,7 +290,9 @@ class windowSelectorWidget(QWidget):
 
 
     def rename(self):
-        self.currentList.window = self.dropdown.currentText()
+        print(self.hotkeyMap.getListNames())
+        self.hotkeyMap.renameHotkeyList(self.currentList, self.dropdown.currentText())
+        print(self.hotkeyMap.getListNames())
 
     def getCurrent(self):
         # print("AAAAAAAAAAAAAAAAAAAAA")
@@ -289,6 +301,7 @@ class windowSelectorWidget(QWidget):
     # def select(self,name):
     #     # select correct dropdown
     #     self.dropdown.
+
 
 
 class hotkeyMapWidget(QWidget):
@@ -321,9 +334,8 @@ class hotkeyMapWidget(QWidget):
     def parseDropdown(self, listName):
         if (listName == "Create new list"):
             print("NEW LIST")
-
         else:
-            print(self.currentList.hotkeyList)
+            #print(self.currentList.hotkeyList)
             self.currentList.removeButton()
             self.currentList.setParent(None)
             self.currentList.deleteLater()
